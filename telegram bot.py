@@ -1,32 +1,47 @@
-# Імпортуємо необхідні модулі для роботи з Telegram-ботом
-import asyncio  # Це для роботи з асинхронними функціями (бот буде відповідати, не "зависаючи")
-from aiogram import Bot, Dispatcher, types  # Головні інструменти для створення Telegram-бота
-from aiogram.types import Message  # Тип даних для повідомлення від користувача
+import asyncio
+from aiogram import Bot, Dispatcher
+from aiogram.types import Message
+from aiogram.filters import Command, CommandStart
 
-# Токен нашого бота, який ми отримали від @BotFather у Telegram
-TYPE_API = "8589645001:AAElRXcd-wb-6omGsANKEDp5mTMmzEcANGo"
+API_TOKEN = "ВАШ_ТОКЕН"
 
-# Створюємо самого бота, передаючи токен
-bot = Bot(token=TYPE_API)
-
-# Створюємо диспетчер — він слідкує, які повідомлення приходять і що на них відповісти
+bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
 
-# Це обробник повідомлень — тобто бот буде відповідати на ВСІ повідомлення, які йому надсилають
+# /start
+@dp.message(CommandStart())
+async def start(message: Message):
+    await message.answer("Привіт, я твій бот! Напиши /help, щоб дізнатися, що я вмію.")
+
+# /help
+@dp.message(Command("help"))
+async def help_command(message: Message):
+    await message.answer("Команди:\n/start — запуск\n/help — допомога\n/joke — жарт\n/bye — прощання")
+
+# /joke
+@dp.message(Command("joke"))
+async def joke_command(message: Message):
+    await message.answer("Чому комп’ютер пішов у спортзал? Щоб прокачати свої байти!")
+
+# /bye
+@dp.message(Command("bye"))
+async def bye_command(message: Message):
+    await message.answer("До побачення! Гарного дня 😊")
+
+# Обробка звичайного тексту
 @dp.message()
-async def echo_handler(message: Message):
-    # Бот надсилає відповідь: просто повторює те, що йому написали
-    await message.answer(f"Ви написали: {message.text}")
+async def echo_text(message: Message):
+    text = message.text.lower()
+    if "привіт" in text:
+        await message.answer("Привіт! Гарного настрою 😄")
+    elif "як справи" in text:
+        await message.answer("У мене все супер, дякую! А в тебе?")
+    else:
+        await message.answer("Я ще вчуся, тому не знаю як відповісти на це 😅")
 
-# Головна функція для запуску бота
+# Запуск
 async def main():
-    # Видаляємо старі вебхуки (щоб не було збоїв)
-    await bot.delete_webhook(drop_pending_updates=True)
-
-    # Запускаємо бота — тепер він слухає повідомлення від користувачів
     await dp.start_polling(bot)
 
-# Якщо ми запускаємо цей файл (а не імпортуємо як бібліотеку)
 if __name__ == "__main__":
-    # Запускаємо асинхронну головну функцію
     asyncio.run(main())
